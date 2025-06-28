@@ -1,0 +1,45 @@
+import pandas as pd
+
+# Load data
+df = pd.read_csv('creditcard.csv')  # Use your file path here
+print(df.head())
+print(df.info()
+# Check class balance
+print(df['Class'].value_counts())
+
+# Check for missing values
+print(df.isnull().sum())
+
+# Separate features and target
+X = df.drop('Class', axis=1)
+y = df['Class']
+
+# Optional: scale features if needed (Time and Amount are usually not scaled in this dataset)
+from sklearn.preprocessing import StandardScaler
+
+X['Amount'] = StandardScaler().fit_transform(X['Amount'].values.reshape(-1,1))
+X['Time'] = StandardScaler().fit_transform(X['Time'].values.reshape(-1,1))
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42, stratify=y
+)
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+
+lr = LogisticRegression(max_iter=1000)
+lr.fit(X_train, y_train)
+
+y_pred_lr = lr.predict(X_test)
+print(confusion_matrix(y_test, y_pred_lr))
+print(classification_report(y_test, y_pred_lr))
+print("ROC AUC Score:", roc_auc_score(y_test, lr.predict_proba(X_test)[:,1]))
+from sklearn.tree import DecisionTreeClassifier
+
+dt = DecisionTreeClassifier(max_depth=5, random_state=42)
+dt.fit(X_train, y_train)
+
+y_pred_dt = dt.predict(X_test)
+print(confusion_matrix(y_test, y_pred_dt))
+print(classification_report(y_test, y_pred_dt))
+print("ROC AUC Score:", roc_auc_score(y_test, dt.predict_proba(X_test)[:,1]))
